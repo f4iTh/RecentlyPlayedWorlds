@@ -33,13 +33,11 @@ namespace RecentlyPlayedWorlds {
 
     private static void On_UIWorldSelectOnUpdateWorldsList(On_UIWorldSelect.orig_UpdateWorldsList orig, UIWorldSelect self) {
       try {
-        MethodInfo AddIndividualWorldMigrationButtons = typeof(UIWorldSelect).GetMethod("LoadMigratableWorlds", BindingFlags.Instance | BindingFlags.NonPublic) 
-          ?? typeof(UIWorldSelect).GetMethod("AddIndividualWorldMigrationButtons", BindingFlags.Instance | BindingFlags.NonPublic);
-        MethodInfo AddAutomaticWorldMigrationButtons = typeof(UIWorldSelect).GetMethod("AddAutomaticWorldMigrationButtons", BindingFlags.Instance | BindingFlags.NonPublic);
+        MethodInfo addIndividualWorldMigrationButtons = typeof(UIWorldSelect).GetMethod("AddIndividualWorldMigrationButtons", BindingFlags.Instance | BindingFlags.NonPublic);
+        MethodInfo addAutomaticWorldMigrationButtons = typeof(UIWorldSelect).GetMethod("AddAutomaticWorldMigrationButtons", BindingFlags.Instance | BindingFlags.NonPublic);
+        UIList worldList = (UIList)typeof(UIWorldSelect).GetField("_worldList", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(self);
 
-        UIList _worldList = (UIList)typeof(UIWorldSelect).GetField("_worldList", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(self);
-
-        _worldList.Clear();
+        worldList!.Clear();
 
         IOrderedEnumerable<WorldFileData> orderedEnumerable = new List<WorldFileData>(Main.WorldList)
           .OrderByDescending(CanWorldBePlayed)
@@ -49,12 +47,14 @@ namespace RecentlyPlayedWorlds {
           .ThenBy(x => x.GetFileName());
 
         int num = 0;
-        foreach (WorldFileData item in orderedEnumerable) 
-          _worldList.Add(new UIWorldListItem(item, num++, CanWorldBePlayed(item)));
+        // ReSharper disable once PossibleMultipleEnumeration
+        foreach (WorldFileData item in orderedEnumerable!) 
+          worldList.Add(new UIWorldListItem(item, num++, CanWorldBePlayed(item)));
 
-        AddIndividualWorldMigrationButtons.Invoke(self, null);
+        addIndividualWorldMigrationButtons!.Invoke(self, null);
 
-        if (!orderedEnumerable.Any()) AddAutomaticWorldMigrationButtons.Invoke(self, null);
+        // ReSharper disable once PossibleMultipleEnumeration
+        if (!orderedEnumerable!.Any()) addAutomaticWorldMigrationButtons!.Invoke(self, null);
       }
       catch (Exception) {
         orig(self);
