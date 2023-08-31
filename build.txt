@@ -1,0 +1,5 @@
+displayName = Recently Played Worlds
+author = f4iTh
+version = 0.1
+includeSource = true
+side = Client

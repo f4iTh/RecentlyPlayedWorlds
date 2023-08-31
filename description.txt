@@ -1,0 +1,1 @@
+Attempts to sort worlds similarly to the update 1.4.5's upcoming recently played worlds feature. 
