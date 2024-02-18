@@ -23,8 +23,8 @@ namespace RecentlyPlayedWorlds {
       IList<TagCompound> list = tag.GetList<TagCompound>("WorldsEntered");
 
       foreach (TagCompound item in list) {
-        var worldUniqueId = item.Get<string>("worldUniqueId");
-        var timestamp = item.Get<ulong>("timestamp");
+        string worldUniqueId = item.Get<string>("worldUniqueId");
+        ulong timestamp = item.Get<ulong>("timestamp");
         this.WorldsEntered[worldUniqueId] = timestamp;
       }
     }
@@ -33,10 +33,8 @@ namespace RecentlyPlayedWorlds {
       if (Main.ActiveWorldFileData == null)
         return;
 
-      var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-      var worldUniqueId = Main.ActiveWorldFileData.UniqueId.ToString();
-
-
+      ulong timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+      string worldUniqueId = Main.ActiveWorldFileData.UniqueId.ToString();
       this.WorldsEntered[worldUniqueId] = timestamp;
     }
   }
