@@ -47,7 +47,7 @@ namespace RecentlyPlayedWorlds {
     }
 
     // IL_004A: ldnull
-    // IL_004B: ldftn     int32 Terraria.GameContent.UI.States.UIWorldSelect::LastPlayed(class Terraria.IO.WorldFileData)
+    // IL_004B: ldftn     int32 RecentlyPlayedWorlds.RecentlyPlayedWorlds::LastPlayed(class Terraria.IO.WorldFileData)
     // IL_0051: newobj    instance void class [System.Private.CoreLib]System.Func`2<class Terraria.IO.WorldFileData, int32>::.ctor(object, native int)
     // IL_0056: call      class [System.Linq]System.Linq.IOrderedEnumerable`1<!!0> [System.Linq]System.Linq.Enumerable::ThenByDescending<class Terraria.IO.WorldFileData, int32>(class [System.Linq]System.Linq.IOrderedEnumerable`1<!!0>, class [System.Private.CoreLib]System.Func`2<!!0, !!1>)
     private static void IL_UIWorldSelectOnUpdateWorldsList(ILContext il) {
