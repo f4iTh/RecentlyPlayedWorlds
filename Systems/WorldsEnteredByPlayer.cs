@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
 namespace RecentlyPlayedWorlds.Systems {
+  [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
+  [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
   public class WorldsEnteredByPlayer : ModPlayer {
     public Dictionary<string, ulong> WorldsEntered = new();
 

@@ -1,8 +1,13 @@
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using log4net;
+using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using RecentlyPlayedWorlds.Systems;
+using ReLogic.Graphics;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.GameContent.UI.Elements;
@@ -11,69 +16,89 @@ using Terraria.IO;
 using Terraria.ModLoader;
 
 namespace RecentlyPlayedWorlds {
+  [SuppressMessage("ReSharper", "UnusedType.Global")]
+  [SuppressMessage("ReSharper", "UnusedMember.Local")]
+  [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
   public class RecentlyPlayedWorlds : Mod {
+    private static ILog _staticLogger;
+    
     public override void Load() {
-      On_UIWorldListItem.ctor += On_UIWorldListItemOnctor;
-      On_UIWorldSelect.UpdateWorldsList += On_UIWorldSelectOnUpdateWorldsList;
+      _staticLogger = this.Logger;
+      
+      IL_UIWorldListItem.ctor += IL_UIWorldListItemOnctor;
+      IL_UIWorldSelect.UpdateWorldsList += IL_UIWorldSelectOnUpdateWorldsList;
+    }
+    
+    private static void IL_UIWorldListItemOnctor(ILContext il) {
+      try {
+        ILCursor ilCursor = new(il);
+
+        if (!ilCursor.TryGotoNext(MoveType.Before, i => i.MatchRet())) {
+          _staticLogger.Error("Could not locate return in \"UIWorldListItem::ctor\". Unable to perform patch.");
+          return;
+        }
+
+        ilCursor.Emit(OpCodes.Ldarg_0);
+        ilCursor.Emit<RecentlyPlayedWorlds>(OpCodes.Call, nameof(AppendLastPlayedIcon));
+      }
+      catch (Exception) {
+        MonoModHooks.DumpIL(ModContent.GetInstance<RecentlyPlayedWorlds>(), il);
+      }
+    }
+    
+    // IL_004A: ldnull
+    // IL_004B: ldftn     int32 Terraria.GameContent.UI.States.UIWorldSelect::LastPlayed(class Terraria.IO.WorldFileData)
+    // IL_0051: newobj    instance void class [System.Private.CoreLib]System.Func`2<class Terraria.IO.WorldFileData, int32>::.ctor(object, native int)
+    // IL_0056: call      class [System.Linq]System.Linq.IOrderedEnumerable`1<!!0> [System.Linq]System.Linq.Enumerable::ThenByDescending<class Terraria.IO.WorldFileData, int32>(class [System.Linq]System.Linq.IOrderedEnumerable`1<!!0>, class [System.Private.CoreLib]System.Func`2<!!0, !!1>)
+    private static void IL_UIWorldSelectOnUpdateWorldsList(ILContext il) {
+      try {
+        ILCursor ilCursor = new(il);
+
+        if (!ilCursor.TryGotoNext(MoveType.After, i => i.MatchCall(typeof(Enumerable), "ThenByDescending"))) {
+          _staticLogger.Error("Could not locate \"System.Linq.Enumerable::ThenByDescending\" in \"UIWorldSelect::UpdateWorldsList\". Unable to perform patch.");
+          return;
+        }
+        
+        ilCursor.Emit(OpCodes.Ldnull);
+        ilCursor.Emit(OpCodes.Ldftn, typeof(RecentlyPlayedWorlds).GetMethod("LastPlayed", BindingFlags.NonPublic | BindingFlags.Static, new[] { typeof(WorldFileData) }));
+        ilCursor.Emit(OpCodes.Newobj, typeof(Func<WorldFileData, int>).GetConstructor(BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public, new[] { typeof(object), typeof(IntPtr) }));
+        ilCursor.Emit(OpCodes.Call, typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static).First(methodInfo => methodInfo.Name == "ThenByDescending" && methodInfo.GetParameters().Length == 2).MakeGenericMethod(typeof(WorldFileData), typeof(int)));
+      }
+      catch (Exception) {
+        MonoModHooks.DumpIL(ModContent.GetInstance<RecentlyPlayedWorlds>(), il);
+      }
     }
 
-    private static void On_UIWorldListItemOnctor(On_UIWorldListItem.orig_ctor orig, UIWorldListItem self, WorldFileData data, int orderInList, bool canBePlayed) {
-      orig(self, data, orderInList, canBePlayed);
+    private static void AppendLastPlayedIcon([SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")] UIWorldListItem worldListItem) {
+      WorldsEnteredByPlayer player = Main.ActivePlayerFileData.Player.GetModPlayer<WorldsEnteredByPlayer>();
 
-      WorldsEnteredByPlayer modPlayer = Main.ActivePlayerFileData.Player.GetModPlayer<WorldsEnteredByPlayer>();
-      if (!modPlayer.WorldsEntered.ContainsKey(data.GetFileName(false))) return;
+      if (!player.WorldsEntered.ContainsKey(worldListItem.Data.GetFileName(false))) {
+        // _staticLogger.Debug($"Player has not entered world \"{worldListItem.Data.GetFileName()}\".");
+        return;
+      }
+      
+      DynamicSpriteFont font = FontAssets.MouseText.Value;
+      Vector2 worldNameStringLength = font.MeasureString(worldListItem.Data.GetWorldName());
 
-      UIImage element = new(TextureAssets.Cursors[3]) {
-        HAlign = 1f,
+      UIImage worldEnteredIcon = new(TextureAssets.Cursors[3]) {
+        HAlign = 0f,
         VAlign = 0f,
         IgnoresMouseInteraction = true
       };
-      self.Append(element);
+      
+      //   UIImage worldEnteredIcon = new(TextureAssets.Cursors[3]) {
+      //     HAlign = 1f,
+      //     VAlign = 0f,
+      //     IgnoresMouseInteraction = true
+      //   };
+      
+      worldEnteredIcon.Left.Set(64f + 6f + worldNameStringLength.X + 6f, 0f);
+      worldListItem.Append(worldEnteredIcon);
     }
-
-    private static void On_UIWorldSelectOnUpdateWorldsList(On_UIWorldSelect.orig_UpdateWorldsList orig, UIWorldSelect self) {
-      try {
-        MethodInfo addIndividualWorldMigrationButtons = typeof(UIWorldSelect).GetMethod("AddIndividualWorldMigrationButtons", BindingFlags.Instance | BindingFlags.NonPublic);
-        MethodInfo addAutomaticWorldMigrationButtons = typeof(UIWorldSelect).GetMethod("AddAutomaticWorldMigrationButtons", BindingFlags.Instance | BindingFlags.NonPublic);
-        UIList worldList = (UIList)typeof(UIWorldSelect).GetField("_worldList", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(self);
-
-        worldList!.Clear();
-
-        IOrderedEnumerable<WorldFileData> orderedEnumerable = new List<WorldFileData>(Main.WorldList)
-          .OrderByDescending(CanWorldBePlayed)
-          .ThenByDescending(x => x.IsFavorite)
-          .ThenByDescending(LastPlayed)
-          .ThenBy(x => x.Name)
-          .ThenBy(x => x.GetFileName());
-
-        int num = 0;
-        // ReSharper disable once PossibleMultipleEnumeration
-        foreach (WorldFileData item in orderedEnumerable!) 
-          worldList.Add(new UIWorldListItem(item, num++, CanWorldBePlayed(item)));
-
-        addIndividualWorldMigrationButtons!.Invoke(self, null);
-
-        // ReSharper disable once PossibleMultipleEnumeration
-        if (!orderedEnumerable!.Any()) addAutomaticWorldMigrationButtons!.Invoke(self, null);
-      }
-      catch (Exception) {
-        orig(self);
-      } 
-    }
-
-    private static bool CanWorldBePlayed(WorldFileData file) {
-      bool num = Main.ActivePlayerFileData.Player.difficulty == 3;
-      bool flag = file.GameMode == 3;
-
-      return num == flag && SystemLoader.CanWorldBePlayed(Main.ActivePlayerFileData, file, out ModSystem _);
-    }
-
-    private static int LastPlayed(WorldFileData file) {
+    
+    private static int LastPlayed([SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")] WorldFileData file) {
       WorldsEnteredByPlayer modPlayer = Main.ActivePlayerFileData.Player.GetModPlayer<WorldsEnteredByPlayer>();
-      if (modPlayer.WorldsEntered.TryGetValue(file.GetFileName(false), out ulong timestamp))
-        return (int)timestamp;
-
-      return 0;
+      return modPlayer.WorldsEntered.TryGetValue(file.GetFileName(false), out ulong timestamp) ? (int)timestamp : 0;
     }
   }
 }
