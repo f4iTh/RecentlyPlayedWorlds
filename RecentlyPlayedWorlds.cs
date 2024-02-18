@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -6,7 +7,6 @@ using log4net;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using RecentlyPlayedWorlds.Systems;
 using ReLogic.Graphics;
 using Terraria;
 using Terraria.GameContent;
@@ -21,14 +21,14 @@ namespace RecentlyPlayedWorlds {
   [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
   public class RecentlyPlayedWorlds : Mod {
     private static ILog _staticLogger;
-    
+
     public override void Load() {
       _staticLogger = this.Logger;
-      
+
       IL_UIWorldListItem.ctor += IL_UIWorldListItemOnctor;
       IL_UIWorldSelect.UpdateWorldsList += IL_UIWorldSelectOnUpdateWorldsList;
     }
-    
+
     private static void IL_UIWorldListItemOnctor(ILContext il) {
       try {
         ILCursor ilCursor = new(il);
@@ -45,7 +45,7 @@ namespace RecentlyPlayedWorlds {
         MonoModHooks.DumpIL(ModContent.GetInstance<RecentlyPlayedWorlds>(), il);
       }
     }
-    
+
     // IL_004A: ldnull
     // IL_004B: ldftn     int32 Terraria.GameContent.UI.States.UIWorldSelect::LastPlayed(class Terraria.IO.WorldFileData)
     // IL_0051: newobj    instance void class [System.Private.CoreLib]System.Func`2<class Terraria.IO.WorldFileData, int32>::.ctor(object, native int)
@@ -58,10 +58,10 @@ namespace RecentlyPlayedWorlds {
           _staticLogger.Error("Could not locate \"System.Linq.Enumerable::ThenByDescending\" in \"UIWorldSelect::UpdateWorldsList\". Unable to perform patch.");
           return;
         }
-        
+
         ilCursor.Emit(OpCodes.Ldnull);
         ilCursor.Emit(OpCodes.Ldftn, typeof(RecentlyPlayedWorlds).GetMethod("LastPlayed", BindingFlags.NonPublic | BindingFlags.Static, new[] { typeof(WorldFileData) }));
-        ilCursor.Emit(OpCodes.Newobj, typeof(Func<WorldFileData, int>).GetConstructor(BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public, new[] { typeof(object), typeof(IntPtr) }));
+        ilCursor.Emit(OpCodes.Newobj, typeof(Func<WorldFileData, ulong>).GetConstructor(BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public, new[] { typeof(object), typeof(IntPtr) }));
         ilCursor.Emit(OpCodes.Call, typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static).First(methodInfo => methodInfo.Name == "ThenByDescending" && methodInfo.GetParameters().Length == 2).MakeGenericMethod(typeof(WorldFileData), typeof(int)));
       }
       catch (Exception) {
@@ -72,11 +72,9 @@ namespace RecentlyPlayedWorlds {
     private static void AppendLastPlayedIcon([SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")] UIWorldListItem worldListItem) {
       WorldsEnteredByPlayer player = Main.ActivePlayerFileData.Player.GetModPlayer<WorldsEnteredByPlayer>();
 
-      if (!player.WorldsEntered.ContainsKey(worldListItem.Data.GetFileName(false))) {
-        // _staticLogger.Debug($"Player has not entered world \"{worldListItem.Data.GetFileName()}\".");
+      if (!player.WorldsEntered.ContainsKey(worldListItem.Data.UniqueId.ToString()))
         return;
-      }
-      
+
       DynamicSpriteFont font = FontAssets.MouseText.Value;
       Vector2 worldNameStringLength = font.MeasureString(worldListItem.Data.GetWorldName());
 
@@ -85,20 +83,20 @@ namespace RecentlyPlayedWorlds {
         VAlign = 0f,
         IgnoresMouseInteraction = true
       };
-      
+
       //   UIImage worldEnteredIcon = new(TextureAssets.Cursors[3]) {
       //     HAlign = 1f,
       //     VAlign = 0f,
       //     IgnoresMouseInteraction = true
       //   };
-      
+
       worldEnteredIcon.Left.Set(64f + 6f + worldNameStringLength.X + 6f, 0f);
       worldListItem.Append(worldEnteredIcon);
     }
-    
-    private static int LastPlayed([SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")] WorldFileData file) {
+
+    private static ulong LastPlayed([SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")] WorldFileData file) {
       WorldsEnteredByPlayer modPlayer = Main.ActivePlayerFileData.Player.GetModPlayer<WorldsEnteredByPlayer>();
-      return modPlayer.WorldsEntered.TryGetValue(file.GetFileName(false), out ulong timestamp) ? (int)timestamp : 0;
+      return modPlayer.WorldsEntered.GetValueOrDefault(file.UniqueId.ToString(), 0UL);
     }
   }
 }

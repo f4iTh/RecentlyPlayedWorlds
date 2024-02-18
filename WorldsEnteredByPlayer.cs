@@ -6,7 +6,7 @@ using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
-namespace RecentlyPlayedWorlds.Systems {
+namespace RecentlyPlayedWorlds {
   [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
   [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
   public class WorldsEnteredByPlayer : ModPlayer {
@@ -14,17 +14,18 @@ namespace RecentlyPlayedWorlds.Systems {
 
     public override void SaveData(TagCompound tag) {
       List<TagCompound> list = this.WorldsEntered
-        .Select(item => new TagCompound { { "worldName", item.Key }, { "timestamp", item.Value } })
-        .ToList();
+        .Select(item => new TagCompound { { "worldUniqueId", item.Key }, { "timestamp", item.Value } }).ToList();
+
       tag["WorldsEntered"] = list;
     }
 
     public override void LoadData(TagCompound tag) {
       IList<TagCompound> list = tag.GetList<TagCompound>("WorldsEntered");
+
       foreach (TagCompound item in list) {
-        string worldName = item.Get<string>("worldName");
-        ulong timestamp = item.Get<ulong>("timestamp");
-        this.WorldsEntered[worldName] = timestamp;
+        var worldUniqueId = item.Get<string>("worldUniqueId");
+        var timestamp = item.Get<ulong>("timestamp");
+        this.WorldsEntered[worldUniqueId] = timestamp;
       }
     }
 
@@ -32,13 +33,11 @@ namespace RecentlyPlayedWorlds.Systems {
       if (Main.ActiveWorldFileData == null)
         return;
 
-      ulong unixTimestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
-      string fileName = Main.ActiveWorldFileData.GetFileName(false);
+      var timestamp = (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+      var worldUniqueId = Main.ActiveWorldFileData.UniqueId.ToString();
 
-      if (this.WorldsEntered.ContainsKey(fileName))
-        this.WorldsEntered[fileName] = unixTimestamp;
-      else
-        this.WorldsEntered.Add(fileName, unixTimestamp);
+
+      this.WorldsEntered[worldUniqueId] = timestamp;
     }
   }
 }
