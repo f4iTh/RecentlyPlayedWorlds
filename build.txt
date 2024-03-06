@@ -1,6 +1,6 @@
 displayName = Recently Played Worlds
 author = f4iTh
-version = 0.2
+version = 0.2.1
 includeSource = true
 side = Client
 weakReferences = SortingFolders@1.5.1, VanillaQoL@1.0.0.23
