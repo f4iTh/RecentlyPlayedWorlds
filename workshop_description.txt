@@ -1,0 +1,10 @@
+﻿Adds an icon for every world a player has previously visited. 
+
+Worlds will also be sorted from most to least recently visited (per-player).
+
+[h2]Known incompatibilities[/h2]
+[list][*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3033802020]Foldering - A Terraria Sorting Mod[/url]
+[/list]
+[h2]See also[/h2]
+[list][*][url=https://github.com/f4iTh/RecentlyPlayedWorlds]Source code[/url]
+[/list]

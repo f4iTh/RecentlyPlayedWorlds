@@ -7,7 +7,7 @@ using Terraria.ModLoader;
 
 namespace RecentlyPlayedWorlds {
   [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-  public class RecentlyPlayedWorlds : Mod {
+  public class ModEntry : Mod {
     internal static ILog StaticLogger;
 
     public override void Load() {

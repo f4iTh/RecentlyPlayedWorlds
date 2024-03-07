@@ -1,7 +1,5 @@
-# Recently Played Worlds
-
-This mod adds an icon for every world a player has previously visited. Worlds will also be sorted (per-player) 
-from most to least recently visited.
+**Recently Played Worlds** is a Terraria mod that adds an icon for every world a player has previously visited. Worlds
+will also be sorted (per-player) from most to least recently visited.
 
 ## Known incompatibilities
 

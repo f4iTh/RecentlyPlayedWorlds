@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RecentlyPlayedWorlds.Common.Systems;
 using Terraria;
 using Terraria.IO;
 using Terraria.ModLoader;
@@ -18,7 +19,7 @@ namespace RecentlyPlayedWorlds.Common.IL {
         ILCursor ilCursor = new(il);
 
         if (!ilCursor.TryGotoNext(MoveType.After, i => i.MatchCall(typeof(Enumerable), "ThenByDescending"))) {
-          RecentlyPlayedWorlds.StaticLogger.Error("Could not locate \"System.Linq.Enumerable::ThenByDescending\" in \"UIWorldSelect::UpdateWorldsList\". Unable to perform patch.");
+          ModEntry.StaticLogger.Error("Could not locate \"System.Linq.Enumerable::ThenByDescending\" in \"UIWorldSelect::UpdateWorldsList\". Unable to perform patch.");
           return;
         }
 
@@ -28,7 +29,7 @@ namespace RecentlyPlayedWorlds.Common.IL {
         ilCursor.Emit(OpCodes.Call, typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static).First(methodInfo => methodInfo.Name == "ThenByDescending" && methodInfo.GetParameters().Length == 2).MakeGenericMethod(typeof(WorldFileData), typeof(int)));
       }
       catch (Exception) {
-        MonoModHooks.DumpIL(ModContent.GetInstance<RecentlyPlayedWorlds>(), il);
+        MonoModHooks.DumpIL(ModContent.GetInstance<ModEntry>(), il);
       }
     }
 

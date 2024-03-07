@@ -6,7 +6,7 @@ using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
-namespace RecentlyPlayedWorlds {
+namespace RecentlyPlayedWorlds.Common.Systems {
   [SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
   [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
   public class WorldsEnteredByPlayer : ModPlayer {

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Xna.Framework;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RecentlyPlayedWorlds.Common.Systems;
 using ReLogic.Graphics;
 using Terraria;
 using Terraria.GameContent;
@@ -18,7 +19,7 @@ namespace RecentlyPlayedWorlds.Common.IL {
         ILCursor ilCursor = new(il);
 
         if (!ilCursor.TryGotoNext(MoveType.Before, i => i.MatchRet())) {
-          RecentlyPlayedWorlds.StaticLogger.Error("Could not locate return in \"UIWorldListItem::ctor\". Unable to perform patch.");
+          ModEntry.StaticLogger.Error("Could not locate return in \"UIWorldListItem::ctor\". Unable to perform patch.");
           return;
         }
 
@@ -26,7 +27,7 @@ namespace RecentlyPlayedWorlds.Common.IL {
         ilCursor.Emit<UIWorldListItemPatches>(OpCodes.Call, nameof(UIWorldListItemPatches.AppendLastPlayedIcon));
       }
       catch (Exception) {
-        MonoModHooks.DumpIL(ModContent.GetInstance<RecentlyPlayedWorlds>(), il);
+        MonoModHooks.DumpIL(ModContent.GetInstance<ModEntry>(), il);
       }
     }
 
