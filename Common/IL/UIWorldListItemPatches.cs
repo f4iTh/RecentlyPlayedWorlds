@@ -11,15 +11,11 @@ using Terraria.GameContent.UI.Elements;
 using Terraria.ModLoader;
 
 namespace RecentlyPlayedWorlds.Common.IL {
-  /// <summary>
-  /// A class containing patches for <see cref="Terraria.GameContent.UI.Elements.UIWorldListItem"/>.
-  /// </summary>
+  /// <summary>A class containing patches for <see cref="Terraria.GameContent.UI.Elements.UIWorldListItem" />.</summary>
   [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
   [SuppressMessage("ReSharper", "InconsistentNaming")]
   public class UIWorldListItemPatches {
-    /// <summary>
-    /// A patch to add an icon to indicate that the player has previously entered the world.
-    /// </summary>
+    /// <summary>A patch to add an icon to indicate that the player has previously entered the world.</summary>
     /// <param name="il">The IL context.</param>
     public static void IL_UIWorldListItemOnctor(ILContext il) {
       try {
@@ -38,9 +34,7 @@ namespace RecentlyPlayedWorlds.Common.IL {
       }
     }
 
-    /// <summary>
-    /// Adds an icon after the world name to indicate that the player has previously entered the world.
-    /// </summary>
+    /// <summary>Adds an icon after the world name to indicate that the player has previously entered the world.</summary>
     /// <param name="worldListItem">The world list item.</param>
     private static void AppendLastPlayedIcon([SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")] UIWorldListItem worldListItem) {
       WorldsEnteredByPlayer player = Main.ActivePlayerFileData.Player.GetModPlayer<WorldsEnteredByPlayer>();
