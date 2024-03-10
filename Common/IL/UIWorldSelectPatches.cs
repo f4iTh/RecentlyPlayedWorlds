@@ -11,8 +11,15 @@ using Terraria.IO;
 using Terraria.ModLoader;
 
 namespace RecentlyPlayedWorlds.Common.IL {
+  /// <summary>
+  /// A class containing patches for <see cref="Terraria.GameContent.UI.States.UIWorldSelect"/>.
+  /// </summary>
   [SuppressMessage("ReSharper", "InconsistentNaming")]
   public class UIWorldSelectPatches {
+    /// <summary>
+    /// A patch to inject sorting by last accessed after sorting by <c>IsFavorite</c> and before sorting by <c>Name</c>.
+    /// </summary>
+    /// <param name="il">The IL context.</param>
     [SuppressMessage("ReSharper", "AssignNullToNotNullAttribute")]
     public static void IL_UIWorldSelectOnUpdateWorldsList(ILContext il) {
       try {
@@ -33,6 +40,10 @@ namespace RecentlyPlayedWorlds.Common.IL {
       }
     }
 
+    /// <summary>
+    /// Gets when a world was accessed by the current player. Returns zero if it has not been accessed before.
+    /// </summary>
+    /// <param name="file">The world file data.</param>
     [SuppressMessage("ReSharper", "UnusedMember.Local")]
     private static ulong LastPlayed([SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")] WorldFileData file) {
       WorldsEnteredByPlayer modPlayer = Main.ActivePlayerFileData.Player.GetModPlayer<WorldsEnteredByPlayer>();

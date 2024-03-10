@@ -11,9 +11,16 @@ using Terraria.GameContent.UI.Elements;
 using Terraria.ModLoader;
 
 namespace RecentlyPlayedWorlds.Common.IL {
+  /// <summary>
+  /// A class containing patches for <see cref="Terraria.GameContent.UI.Elements.UIWorldListItem"/>.
+  /// </summary>
   [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
   [SuppressMessage("ReSharper", "InconsistentNaming")]
   public class UIWorldListItemPatches {
+    /// <summary>
+    /// A patch to add an icon to indicate that the player has previously entered the world.
+    /// </summary>
+    /// <param name="il">The IL context.</param>
     public static void IL_UIWorldListItemOnctor(ILContext il) {
       try {
         ILCursor ilCursor = new(il);
@@ -31,6 +38,10 @@ namespace RecentlyPlayedWorlds.Common.IL {
       }
     }
 
+    /// <summary>
+    /// Adds an icon after the world name to indicate that the player has previously entered the world.
+    /// </summary>
+    /// <param name="worldListItem">The world list item.</param>
     private static void AppendLastPlayedIcon([SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")] UIWorldListItem worldListItem) {
       WorldsEnteredByPlayer player = Main.ActivePlayerFileData.Player.GetModPlayer<WorldsEnteredByPlayer>();
 
@@ -46,6 +57,7 @@ namespace RecentlyPlayedWorlds.Common.IL {
         IgnoresMouseInteraction = true
       };
 
+      // Top-right; has overlap with some other mod(s)
       //   UIImage worldEnteredIcon = new(TextureAssets.Cursors[3]) {
       //     HAlign = 1f,
       //     VAlign = 0f,

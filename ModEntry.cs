@@ -6,10 +6,17 @@ using Terraria.GameContent.UI.States;
 using Terraria.ModLoader;
 
 namespace RecentlyPlayedWorlds {
+  /// <summary>
+  /// The mod entry point.
+  /// </summary>
   [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
   public class ModEntry : Mod {
+    /// <summary>
+    /// Enables easy access to logging across the entire project.
+    /// </summary>
     internal static ILog StaticLogger;
 
+    /// <inheritdoc cref="Mod.Load"/>
     public override void Load() {
       StaticLogger = this.Logger;
 
